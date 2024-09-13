@@ -41,7 +41,7 @@ DJANGO_APPS = [
 ]
 
 PROJECT_APPS = [
-
+    'inference',
 ]
 
 THIRD_PARTY_APPS = [
