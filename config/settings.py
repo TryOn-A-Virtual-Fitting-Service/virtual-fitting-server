@@ -17,7 +17,7 @@ from os.path import join, dirname
 
 # env 파일 로딩
 dotenv_path = join(dirname(__file__), '.env')
-dotenv.read_dotenv(dotenv_path)
+dotenv.load_dotenv(dotenv_path)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
