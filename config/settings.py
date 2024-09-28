@@ -13,19 +13,17 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 from pathlib import Path
 import dotenv
 import os
-from os.path import join, dirname
 
-# env 파일 로딩
-dotenv_path = join(dirname(__file__), '.env')
-dotenv.load_dotenv(dotenv_path)
-
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
+# Define the base directory
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Load the .env file
+dotenv_path = BASE_DIR / '.env'
+dotenv.load_dotenv(dotenv_path)
 
-SECRET_KEY = os.environ.get("SECRET_KEY")
-
-DEBUG = os.environ.get("DEBUG")
+# Access environment variables
+SECRET_KEY = os.getenv("SECRET_KEY")
+DEBUG = os.getenv("DEBUG") == 'True'  # Convert DEBUG to a boolean value
 
 ALLOWED_HOSTS = []
 
