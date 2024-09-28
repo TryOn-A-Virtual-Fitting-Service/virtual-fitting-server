@@ -1,7 +1,9 @@
 from django.http import JsonResponse
 from django.shortcuts import render
 import base64
+from django.views.decorators.csrf import csrf_exempt
 
+@csrf_exempt
 def generate(request):
     if request.method == "POST":
         # Assuming 'image.jpg' is in the same directory as this script
