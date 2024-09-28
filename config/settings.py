@@ -25,7 +25,7 @@ dotenv.load_dotenv(dotenv_path)
 SECRET_KEY = os.getenv("SECRET_KEY")
 DEBUG = os.getenv("DEBUG") == 'True'  # Convert DEBUG to a boolean value
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["0.0.0.0:8000", "localhost", "127.0.0.1"]
 
 # Application definition
 
