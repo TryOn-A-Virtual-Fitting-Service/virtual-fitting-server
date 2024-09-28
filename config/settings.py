@@ -25,9 +25,11 @@ dotenv.load_dotenv(dotenv_path)
 SECRET_KEY = os.getenv("SECRET_KEY")
 DEBUG = os.getenv("DEBUG") == 'True'  # Convert DEBUG to a boolean value
 SERVER_IP_ADDRESS = os.getenv("SERVER_IP_ADDRESS")
+SERVER_DOMAIN_NAME = os.getenv("SERVER_DOMAIN_NAME")
 
 ALLOWED_HOSTS = ["0.0.0.0:8000", "localhost", "127.0.0.1"]
 ALLOWED_HOSTS.append(SERVER_IP_ADDRESS)
+ALLOWED_HOSTS.append(SERVER_DOMAIN_NAME)
 
 # Application definition
 
