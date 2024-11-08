@@ -57,33 +57,55 @@ def generate(request):
             'message': 'Error saving files',
             'data': str(e),
         }, status=500)
-    # original_dir = os.getcwd()
+    # # original_dir = os.getcwd()
+    # try:
+    #     # # OOTDiffusion 인퍼런스 실행
+    #     # os.chdir(ootd_working_dir)
+    #     # runpy.run_path(run_ootd_path, run_name='__main__', init_globals={
+    #     #     'model_path': model_path,
+    #     #     'cloth_path': clothing_path,
+    #     #     'scale': 1.0,
+    #     #     'sample': 1
+    #     # })
+    #     # os.chdir(original_dir)
+    #     command = [
+    #         "source", venv_activate_path,
+    #         "&&",
+    #         "cd", ootd_working_dir,
+    #         "&&",
+    #         "python", run_ootd_path,
+    #         "--model_path", model_path,
+    #         "--cloth_path", clothing_path,
+    #         "--scale", "1.0",
+    #         "--sample", "1"
+    #     ]
+    #     subprocess.run(" ".join(command), shell=True, check=True, cwd=ootd_working_dir)
+    # except subprocess.CalledProcessError as e:
+    #     return JsonResponse({
+    #         'message': 'Error running OOTD script',
+    #         'data': str(e),
+    #     }, status=500)
     try:
-        # # OOTDiffusion 인퍼런스 실행
-        # os.chdir(ootd_working_dir)
-        # runpy.run_path(run_ootd_path, run_name='__main__', init_globals={
-        #     'model_path': model_path,
-        #     'cloth_path': clothing_path,
-        #     'scale': 1.0,
-        #     'sample': 1
-        # })
-        # os.chdir(original_dir)
+        python_executable = os.path.join(root_dir, '.venv', 'bin', 'python')
         command = [
-            "source", venv_activate_path,
-            "&&",
-            "cd", ootd_working_dir,
-            "&&",
-            "python", run_ootd_path,
+            python_executable,
+            run_ootd_path,
             "--model_path", model_path,
             "--cloth_path", clothing_path,
             "--scale", "1.0",
             "--sample", "1"
         ]
-        subprocess.run(" ".join(command), shell=True, check=True, cwd=ootd_working_dir)
+        result = subprocess.run(
+            command,
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True
+        )
     except subprocess.CalledProcessError as e:
         return JsonResponse({
             'message': 'Error running OOTD script',
-            'data': str(e),
+            'data': e.stderr,  # 상세 오류 메시지 포함
         }, status=500)
     
     try:
