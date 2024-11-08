@@ -68,7 +68,7 @@ def generate(request):
         #     'sample': 1
         # })
         # os.chdir(original_dir)
-        command = f"source {venv_activate_path} && python {run_ootd_path} --model_path {model_path} --cloth_path {clothing_path} --scale 1.0 --sample 1"
+        command = f"source {venv_activate_path} && cd {ootd_working_dir} && python {run_ootd_path} --model_path {model_path} --cloth_path {clothing_path} --scale 1.0 --sample 1"
         subprocess.run(command, shell=True, check=True, cwd=ootd_working_dir)
     except subprocess.CalledProcessError as e:
         return JsonResponse({
