@@ -3,5 +3,5 @@ from inference.views import *
 
 urlpatterns = [
     path('', generate, name = 'generate'),
-    path('retrieve', retrieve, name = 'retrieve'),
+    path('retrieve/', retrieve, name = 'retrieve'),
 ]

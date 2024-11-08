@@ -53,20 +53,25 @@ THIRD_PARTY_APPS = [
 INSTALLED_APPS = DJANGO_APPS + PROJECT_APPS + THIRD_PARTY_APPS
 
 MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
+    #'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
 ]
 
 FRONTEND_URL = os.getenv("FRONTEND_URL")
 
 CORS_ALLOWED_ORIGINS = []
 CORS_ALLOWED_ORIGINS.append(FRONTEND_URL)
+
+CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1:8000', 'http://localhost:8000']
+CSRF_TRUSTED_ORIGINS.append(FRONTEND_URL)
+CSRF_TRUSTED_ORIGINS.append('http://' + SERVER_DOMAIN_NAME)
+
 
 ROOT_URLCONF = 'config.urls'
 
