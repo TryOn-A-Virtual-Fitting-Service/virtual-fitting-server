@@ -1,3 +1,4 @@
+import subprocess
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import os
@@ -32,7 +33,8 @@ def generate(request):
     fitting_results_dir = os.path.join(root_dir, 'fitting_results')
     run_ootd_path = os.path.join(root_dir, 'OOTDiffusion', 'run', 'run_ootd.py')
     ootd_working_dir = os.path.join(root_dir, 'OOTDiffusion', 'run')
-    
+    venv_activate_path = os.path.join(root_dir, '.venv', 'bin', 'activate')
+
     if not os.path.exists(fitting_results_dir):
         try:
             os.makedirs(fitting_results_dir)
@@ -55,19 +57,21 @@ def generate(request):
             'message': 'Error saving files',
             'data': str(e),
         }, status=500)
-    original_dir = os.getcwd()
+    # original_dir = os.getcwd()
     try:
-        # OOTDiffusion 인퍼런스 실행
-        os.chdir(ootd_working_dir)
-        runpy.run_path(run_ootd_path, run_name='__main__', init_globals={
-            'model_path': model_path,
-            'cloth_path': clothing_path,
-            'scale': 1.0,
-            'sample': 1
-        })
-        os.chdir(original_dir)
+        # # OOTDiffusion 인퍼런스 실행
+        # os.chdir(ootd_working_dir)
+        # runpy.run_path(run_ootd_path, run_name='__main__', init_globals={
+        #     'model_path': model_path,
+        #     'cloth_path': clothing_path,
+        #     'scale': 1.0,
+        #     'sample': 1
+        # })
+        # os.chdir(original_dir)
+        command = f"source {venv_activate_path} && python {run_ootd_path} --model_path {model_path} --cloth_path {clothing_path} --scale 1.0 --sample 1"
+        subprocess.run(command, shell=True, check=True, cwd=ootd_working_dir)
     except Exception as e:
-        os.chdir(original_dir)
+        # os.chdir(original_dir)
         return JsonResponse({
             'message': 'Error running OOTD script',
             'data': str(e),
