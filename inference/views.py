@@ -70,8 +70,7 @@ def generate(request):
         # os.chdir(original_dir)
         command = f"source {venv_activate_path} && python {run_ootd_path} --model_path {model_path} --cloth_path {clothing_path} --scale 1.0 --sample 1"
         subprocess.run(command, shell=True, check=True, cwd=ootd_working_dir)
-    except Exception as e:
-        # os.chdir(original_dir)
+    except subprocess.CalledProcessError as e:
         return JsonResponse({
             'message': 'Error running OOTD script',
             'data': str(e),
