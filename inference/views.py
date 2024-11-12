@@ -70,7 +70,7 @@ def generate(request):
         # os.chdir(original_dir)
         python_executable = os.path.join(root_dir, 'venv', 'bin', 'python')
         command = [
-            "cd ./OOTDiffusion/run && ../../venv/bin/python", "run_ootd.py",
+            "cd ./OOTDiffusion/run && ../../venv/bin/python ./run_ootd.py",
             "--model_path", model_path,
             "--cloth_path", clothing_path,
             "--scale", "1.0",
