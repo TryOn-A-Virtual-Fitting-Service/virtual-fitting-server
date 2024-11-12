@@ -85,28 +85,28 @@ def generate(request):
             'message': 'Error running OOTD script',
             'data': str(e),
         }, status=500)
-    try:
-        python_executable = os.path.join(root_dir, '.venv', 'bin', 'python')
-        command = [
-            python_executable,
-            run_ootd_path,
-            "--model_path", model_path,
-            "--cloth_path", clothing_path,
-            "--scale", "1.0",
-            "--sample", "1"
-        ]
-        result = subprocess.run(
-            command,
-            check=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True
-        )
-    except subprocess.CalledProcessError as e:
-        return JsonResponse({
-            'message': 'Error running OOTD script',
-            'data': e.stderr,  # 상세 오류 메시지 포함
-        }, status=500)
+    # try:
+    #     python_executable = os.path.join(root_dir, '.venv', 'bin', 'python')
+    #     command = [
+    #         python_executable,
+    #         run_ootd_path,
+    #         "--model_path", model_path,
+    #         "--cloth_path", clothing_path,
+    #         "--scale", "1.0",
+    #         "--sample", "1"
+    #     ]
+    #     result = subprocess.run(
+    #         command,
+    #         check=True,
+    #         stdout=subprocess.PIPE,
+    #         stderr=subprocess.PIPE,
+    #         text=True
+    #     )
+    # except subprocess.CalledProcessError as e:
+    #     return JsonResponse({
+    #         'message': 'Error running OOTD script',
+    #         'data': e.stderr,  # 상세 오류 메시지 포함
+    #     }, status=500)
     
     try:
         timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
