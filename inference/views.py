@@ -68,14 +68,16 @@ def generate(request):
         #     'sample': 1
         # })
         # os.chdir(original_dir)
+        python_executable = os.path.join(root_dir, 'venv', 'bin', 'python')
         command = [
-            "source ./venv/bin/activate && cd ./OOTDiffusion/run && python run_ootd.py",
+            "cd ./OOTDiffusion/run",
+            python_executable, "run_ootd.py",
             "--model_path", model_path,
             "--cloth_path", clothing_path,
             "--scale", "1.0",
             "--sample", "1"
         ]
-        subprocess.run(" ".join(command), shell=True, check=True, cwd=ootd_working_dir)
+        subprocess.run(command, shell=False, check=True, cwd=ootd_working_dir)
     except subprocess.CalledProcessError as e:
         return JsonResponse({
             'message': 'Error running OOTD script',
