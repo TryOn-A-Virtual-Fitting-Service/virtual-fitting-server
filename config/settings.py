@@ -17,6 +17,11 @@ import os
 # Define the base directory
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+STATIC_URL = '/static/'
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'results'),
+]
+
 # Load the .env file
 dotenv_path = BASE_DIR / '.env'
 dotenv.load_dotenv(dotenv_path)
