@@ -33,7 +33,7 @@ def generate(request):
     fitting_results_dir = os.path.join(root_dir, 'fitting_results')
     run_ootd_path = os.path.join(root_dir, 'OOTDiffusion', 'run', 'run_ootd.py')
     ootd_working_dir = os.path.join(root_dir, 'OOTDiffusion', 'run')
-    venv_activate_path = os.path.join(root_dir, 'venv', 'bin', 'activate')
+    # venv_activate_path = os.path.join(root_dir, 'venv', 'bin', 'activate')
 
     if not os.path.exists(fitting_results_dir):
         try:
@@ -69,11 +69,7 @@ def generate(request):
         # })
         # os.chdir(original_dir)
         command = [
-            "source", venv_activate_path,
-            "&&",
-            "cd ./OOTDiffusion/run",
-            "&&",
-            "python", run_ootd_path,
+            "source ./venv/bin/activate && cd ./OOTDiffusion/run && python run_ootd.py",
             "--model_path", model_path,
             "--cloth_path", clothing_path,
             "--scale", "1.0",
