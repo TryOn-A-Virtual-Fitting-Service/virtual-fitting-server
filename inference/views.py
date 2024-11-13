@@ -5,7 +5,7 @@ import os
 import runpy
 import shutil
 from datetime import datetime
-from OOTDiffusion.run.run_ootd import run_ootd
+# from OOTDiffusion.run.run_ootd import run_ootd
 
 @csrf_exempt
 def generate(request):
@@ -121,3 +121,8 @@ def generate(request):
         'message': 'Inference successful',
         'data': result_filename,
     }, status=200)
+
+
+def run_ootd(model_path, clothing_path):
+    
+    return image
