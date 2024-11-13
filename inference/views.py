@@ -121,37 +121,3 @@ def generate(request):
         'message': 'Inference successful',
         'data': result_filename,
     }, status=200)
-
-    
-
-@csrf_exempt
-def retrieve(request):
-    if request.method == "GET":
-        if 'filename' not in request.GET:
-            return JsonResponse({
-                'message': 'Missing filename',
-                'data': "Filename is required",
-            }, status=400)
-        
-        filename = request.GET['filename']
-        root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        fitting_results_dir = os.path.join(root_dir, 'fitting_results')
-        result_path = os.path.join(fitting_results_dir, filename)
-        
-        if not os.path.exists(result_path):
-            return JsonResponse({
-                'message': 'File not found',
-                'data': "File not found",
-            }, status=404)
-        
-        with open(result_path, 'rb') as f:
-            file_data = f.read()
-            response = HttpResponse(file_data, content_type='image/png')
-            response['Content-Disposition'] = f'attachment; filename="{filename}"'
-            return response
-    else:
-        return JsonResponse({
-            'message': 'Only GET is allowed',
-            'data': "Only GET is allowed",
-        }, status=405)
-    
