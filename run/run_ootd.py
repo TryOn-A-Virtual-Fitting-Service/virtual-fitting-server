@@ -2,7 +2,7 @@ from pathlib import Path
 from PIL import Image
 import sys
 import os
-from utils_ootd import get_mask_location
+from run.utils_ootd import get_mask_location
 from preprocess.openpose.run_openpose import OpenPose
 from preprocess.humanparsing.run_parsing import Parsing
 from ootd.inference_ootd_hd import OOTDiffusionHD

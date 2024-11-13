@@ -32,8 +32,13 @@ def generate(request):
     clothing_path = os.path.join(temp_storage_dir, 'clothing.jpg')
     model_path = os.path.join(temp_storage_dir, 'model.jpg')
     
-    clothing.save(clothing_path)
-    model.save(model_path)
+    with open(clothing_path, 'wb+') as destination:
+        for chunk in clothing.chunks():
+            destination.write(chunk)
+    
+    with open(model_path, 'wb+') as destination:
+        for chunk in model.chunks():
+            destination.write(chunk)
     
     from run.run_ootd import run_ootd
     image = run_ootd(model_path, clothing_path)
