@@ -23,89 +23,19 @@ def generate(request):
     
     clothing = request.FILES['clothing']
     model = request.FILES['model']
-    
+
+    # save the uploaded files to the temp_storage directory
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    root_dir = os.path.dirname(current_dir)  # Set root_dir to 'virtual-fitting-server'
-    
+    root_dir = os.path.dirname(current_dir)
     temp_storage_dir = os.path.join(root_dir, 'temp_storage')
+
     clothing_path = os.path.join(temp_storage_dir, 'clothing.jpg')
     model_path = os.path.join(temp_storage_dir, 'model.jpg')
-    # output_path = os.path.join(root_dir, 'OOTDiffusion', 'run', 'images_output', 'out_hd_0.png')
-    # fitting_results_dir = os.path.join(root_dir, 'fitting_results')
-    # run_ootd_path = os.path.join(root_dir, 'OOTDiffusion', 'run', 'run_ootd.py')
-    # ootd_working_dir = os.path.join(root_dir, 'OOTDiffusion', 'run')
-    # venv_activate_path = os.path.join(root_dir, 'venv', 'bin', 'activate')
-
-    # if not os.path.exists(fitting_results_dir):
-    #     try:
-    #         os.makedirs(fitting_results_dir)
-    #     except OSError as e:
-    #         return JsonResponse({
-    #             'message': 'Error creating fitting results directory',
-    #             'data': str(e),
-    #         }, status=500)
     
-    # try:
-    #     # 업로드된 옷과 모델 이미지를 저장
-    #     with open(clothing_path, 'wb+') as destination:
-    #         for chunk in clothing.chunks():
-    #             destination.write(chunk)
-    #     with open(model_path, 'wb+') as destination:
-    #         for chunk in model.chunks():
-    #             destination.write(chunk)
-    # except Exception as e:
-    #     return JsonResponse({
-    #         'message': 'Error saving files',
-    #         'data': str(e),
-    #     }, status=500)
-    # original_dir = os.getcwd()
-    # try:
-        # # OOTDiffusion 인퍼런스 실행
-        # os.chdir(ootd_working_dir)
-        # runpy.run_path(run_ootd_path, run_name='__main__', init_globals={
-        #     'model_path': model_path,
-        #     'cloth_path': clothing_path,
-        #     'scale': 1.0,
-        #     'sample': 1
-        # })
-        # os.chdir(original_dir)
-    #     python_executable = os.path.join(root_dir, 'venv', 'bin', 'python')
-    #     command = [
-    #         "cd ./OOTDiffusion/run && ../../venv/bin/python ./run_ootd.py",
-    #         "--model_path", model_path,
-    #         "--cloth_path", clothing_path,
-    #         "--scale", "1.0",
-    #         "--sample", "1"
-    #     ]
-    #     subprocess.run(command, shell=False, check=True, cwd=ootd_working_dir)
-    # except subprocess.CalledProcessError as e:
-    #     return JsonResponse({
-    #         'message': 'Error running OOTD script',
-    #         'data': str(e),
-    #     }, status=500)
-    # try:
-    #     python_executable = os.path.join(root_dir, '.venv', 'bin', 'python')
-    #     command = [
-    #         python_executable,
-    #         run_ootd_path,
-    #         "--model_path", model_path,
-    #         "--cloth_path", clothing_path,
-    #         "--scale", "1.0",
-    #         "--sample", "1"
-    #     ]
-    #     result = subprocess.run(
-    #         command,
-    #         check=True,
-    #         stdout=subprocess.PIPE,
-    #         stderr=subprocess.PIPE,
-    #         text=True
-    #     )
-    # except subprocess.CalledProcessError as e:
-    #     return JsonResponse({
-    #         'message': 'Error running OOTD script',
-    #         'data': e.stderr,  # 상세 오류 메시지 포함
-    #     }, status=500)
+    clothing.save(clothing_path)
+    model.save(model_path)
     
+    from run.run_ootd import run_ootd
     image = run_ootd(model_path, clothing_path)
     try:
         timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
@@ -121,8 +51,3 @@ def generate(request):
         'message': 'Inference successful',
         'data': result_filename,
     }, status=200)
-
-
-def run_ootd(model_path, clothing_path):
-    
-    return image
