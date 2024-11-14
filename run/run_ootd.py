@@ -59,4 +59,8 @@ def run_ootd(model_path, cloth_path, gpu_id=0, model_type="hd", category=0, scal
         image = images[0]
     if len(images) == 1:
         image = images[0]
+
+    torch.cuda.empty_cache()
+    torch.cuda.ipc_collect()
+
     return image
