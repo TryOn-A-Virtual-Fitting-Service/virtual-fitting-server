@@ -9,6 +9,11 @@ from ootd.inference_ootd_hd import OOTDiffusionHD
 from ootd.inference_ootd_dc import OOTDiffusionDC
 
 def run_ootd(model_path, cloth_path, gpu_id=0, model_type="hd", category=0, scale=1.0, step=20, sample=1, seed=-1):
+    
+    import torch
+    torch.cuda.empty_cache()
+    torch.cuda.ipc_collect()
+    
     openpose_model = OpenPose(gpu_id)
     parsing_model = Parsing(gpu_id)
 
