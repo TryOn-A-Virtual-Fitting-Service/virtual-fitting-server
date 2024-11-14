@@ -33,7 +33,7 @@ class OOTDiffusionHD:
 
     def __init__(self, gpu_id):
         self.gpu_id = 'cuda:' + str(gpu_id)
-
+        print("Current working directory:", os.getcwd())
         vae = AutoencoderKL.from_pretrained(
             VAE_PATH,
             subfolder="vae",
