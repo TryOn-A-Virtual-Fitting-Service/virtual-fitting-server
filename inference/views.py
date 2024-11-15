@@ -40,11 +40,11 @@ def generate(request):
     clothing_path = os.path.join(temp_storage_dir, 'clothing.jpg')
     model_path = os.path.join(temp_storage_dir, 'model.jpg')
 
-    clothing = Image.open(clothing)
-    model = Image.open(model)
+    # clothing = Image.open(clothing)
+    # model = Image.open(model)
 
-    clothing = remove(clothing)
-    model = remove(model)
+    # clothing = remove(clothing)
+    # model = remove(model)
 
     # clothing_data = clothing.read()
     # model_data = model.read()
