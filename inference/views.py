@@ -39,11 +39,11 @@ def generate(request):
     clothing_path = os.path.join(temp_storage_dir, 'clothing.jpg')
     model_path = os.path.join(temp_storage_dir, 'model.jpg')
 
-    clothing_data = clothing.read()
-    model_data = model.read()
+    # clothing_data = clothing.read()
+    # model_data = model.read()
 
-    clothing = remove(clothing_data)
-    model = remove(model_data)
+    # clothing = remove(clothing_data)
+    # model = remove(model_data)
 
     with open(clothing_path, 'wb+') as destination:
         for chunk in clothing.chunks():
