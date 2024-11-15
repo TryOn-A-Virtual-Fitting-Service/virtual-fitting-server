@@ -16,10 +16,16 @@ def generate(request):
             'data': "Only POST is allowed",
         }, status=405)
     
-    if 'clothing' not in request.FILES or 'model' not in request.FILES:
+    if 'clothing' not in request.FILES:
         return JsonResponse({
-            'message': 'Missing files',
-            'data': "Both clothing and model files are required",
+            'message': 'Missing clothing file',
+            'data': "Clothing file is required",
+        }, status=400)
+    
+    if 'model' not in request.FILES:
+        return JsonResponse({
+            'message': 'Missing model file',
+            'data': "Model file is required",
         }, status=400)
     
     clothing = request.FILES['clothing']
@@ -33,8 +39,11 @@ def generate(request):
     clothing_path = os.path.join(temp_storage_dir, 'clothing.jpg')
     model_path = os.path.join(temp_storage_dir, 'model.jpg')
 
-    clothing = remove(clothing_path)
-    model = remove(model_path)
+    clothing_data = clothing.read()
+    model_data = model.read()
+
+    clothing = remove(clothing_data)
+    model = remove(model_data)
 
     with open(clothing_path, 'wb+') as destination:
         for chunk in clothing.chunks():
