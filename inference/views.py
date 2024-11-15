@@ -6,6 +6,7 @@ import runpy
 import shutil
 from datetime import datetime
 from rembg import remove
+from PIL import Image
 # from OOTDiffusion.run.run_ootd import run_ootd
 
 @csrf_exempt
@@ -39,11 +40,14 @@ def generate(request):
     clothing_path = os.path.join(temp_storage_dir, 'clothing.jpg')
     model_path = os.path.join(temp_storage_dir, 'model.jpg')
 
+    clothing = Image.open(clothing)
+    model = Image.open(model)
+
+    clothing = remove(clothing)
+    model = remove(model)
+
     # clothing_data = clothing.read()
     # model_data = model.read()
-
-    # clothing = remove(clothing_data)
-    # model = remove(model_data)
 
     with open(clothing_path, 'wb+') as destination:
         for chunk in clothing.chunks():
