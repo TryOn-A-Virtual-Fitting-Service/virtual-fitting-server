@@ -62,6 +62,11 @@ def generate(request):
     
     from run.run_ootd import run_ootd
     image = run_ootd(model_path, clothing_path)
+    
+    import torch
+    torch.cuda.empty_cache()
+    torch.cuda.ipc_collect()
+
     try:
         timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
         result_filename = f'result_{timestamp}.png'
