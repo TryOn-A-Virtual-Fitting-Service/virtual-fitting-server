@@ -19,7 +19,13 @@ def generate(request):
             'data': "Only POST is allowed",
         }, status=405)
     
-    print(request)
+    print("-----------------------------------\n\n")
+    print("Request headers: ")
+    print(request.headers)
+    print("Request body: ")
+    print(request.body)
+    print("Request files: ")
+    print(request.FILES)
 
     if 'clothing' not in request.FILES:
         return JsonResponse({
