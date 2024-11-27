@@ -158,7 +158,7 @@ LOGGING = {
     'disable_existing_loggers': False,
     'formatters': {
         'verbose': {
-            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'format': '{levelname} {asctime} {module} {message}',
             'style': '{',
         },
         'simple': {
@@ -175,19 +175,19 @@ LOGGING = {
         'file': {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
-            'filename': BASE_DIR / 'debug.log',  # Log file path
+            'filename': BASE_DIR / 'debug.log',
             'formatter': 'verbose',
         },
     },
     'loggers': {
         'django': {
             'handlers': ['console', 'file'],
-            'level': 'DEBUG',  # Set to INFO, WARNING, or ERROR as needed
+            'level': 'DEBUG',
             'propagate': True,
         },
-        'django.db.backends': {
-            'handlers': ['file'],
-            'level': 'DEBUG',  # Log SQL queries (for development only)
+        'django.utils.autoreload': {
+            'handlers': ['console', 'file'],
+            'level': 'CRITICAL',  # Suppress autoreload messages
             'propagate': False,
         },
     },
