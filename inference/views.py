@@ -29,6 +29,9 @@ def generate(request):
             'data': "Model file is required",
         }, status=400)
     
+    scheme = request.scheme
+    print(scheme)
+
     clothing = request.FILES['clothing']
     model = request.FILES['model']
 
