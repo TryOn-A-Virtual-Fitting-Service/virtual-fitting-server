@@ -50,11 +50,11 @@ def generate(request):
         output.seek(0)
         return output
 
-    clothing = remove_background(clothing)
-    clothing = convert_to_jpg(clothing)
+    # clothing = remove_background(clothing)
+    # clothing = convert_to_jpg(clothing)
 
-    model = remove_background(model)
-    model = convert_to_jpg(model)
+    # model = remove_background(model)
+    # model = convert_to_jpg(model)
 
     # save the uploaded files to the temp_storage directory
     current_dir = os.path.dirname(os.path.abspath(__file__))
