@@ -7,6 +7,8 @@ import shutil
 from datetime import datetime
 from rembg import remove
 from PIL import Image
+import torch
+from io import BytesIO
 # from OOTDiffusion.run.run_ootd import run_ootd
 
 @csrf_exempt
@@ -30,9 +32,27 @@ def generate(request):
         }, status=400)
     
     print(f"Given protocol is : {request.scheme}")
-
     clothing = request.FILES['clothing']
     model = request.FILES['model']
+    
+    def remove_background(image_file):
+        image = Image.open(image_file)
+        image = remove(image)
+        return image
+
+    def convert_to_jpg(image):
+        if image.mode in ("RGBA", "P"):
+            image = image.convert("RGB")
+        output = BytesIO()
+        image.save(output, format='JPEG')
+        output.seek(0)
+        return output
+
+    clothing = remove_background(clothing)
+    clothing = convert_to_jpg(clothing)
+
+    model = remove_background(model)
+    model = convert_to_jpg(model)
 
     # save the uploaded files to the temp_storage directory
     current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -62,7 +82,6 @@ def generate(request):
     from run.run_ootd import run_ootd
     image = run_ootd(model_path, clothing_path)
     
-    import torch
     torch.cuda.empty_cache()
     torch.cuda.ipc_collect()
 
