@@ -19,6 +19,8 @@ def generate(request):
             'data': "Only POST is allowed",
         }, status=405)
     
+    print(request)
+
     if 'clothing' not in request.FILES:
         return JsonResponse({
             'message': 'Missing clothing file',
