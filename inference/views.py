@@ -8,6 +8,7 @@ from rembg import remove
 from PIL import Image
 import torch
 from io import BytesIO
+import json
 import onnxruntime as ort
 # from OOTDiffusion.run.run_ootd import run_ootd
 
@@ -28,8 +29,15 @@ def generate(request):
     # print(request.FILES)
 
     print(f"Given protocol is : {request.scheme}")
-    clothing_url = request.POST.get('clothing')
-    model_url = request.POST.get('model')
+    try:
+        data = json.loads(request.body)
+        clothing_url = data.get('clothing')
+        model_url = data.get('model')
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'message': 'Invalid JSON input',
+            'data': "Invalid JSON input",
+        }, status=400)
 
     if not clothing_url:
         return JsonResponse({
