@@ -194,6 +194,11 @@ def generate(request):
     torch.cuda.empty_cache()
     torch.cuda.ipc_collect()
 
+    # 모델 사이즈에 맞게 이미지 크기 조정
+    with Image.open(model_path) as model_img:
+        model_width, model_height = model_img.size
+    image = image.resize((model_width, model_height), Image.Resampling.LANCZOS)
+
     try:
         timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
         result_filename = f'result_{timestamp}.png'
