@@ -88,11 +88,11 @@ def generate(request):
                 new_size = (int(width * ratio), int(height * ratio))
 
                 # 이미지를 축소해야 하는 경우에만 리사이즈 수행
-                if ratio < 1:
-                    img = img.resize(new_size, Image.Resampling.LANCZOS)
-                    print(f"  Image resized to {new_size}")
-                else:
-                    print("  Image size is within the maximum bounds. No resizing needed.")
+                # if ratio < 1: # 잠시 비활성화
+                #     img = img.resize(new_size, Image.Resampling.LANCZOS)
+                #     print(f"  Image resized to {new_size}")
+                # else:
+                #     print("  Image size is within the maximum bounds. No resizing needed.")
 
                 # 알파 채널 처리
                 if img.mode == 'RGBA':
