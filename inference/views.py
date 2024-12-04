@@ -72,6 +72,8 @@ def generate(request):
             return str(e)
         return None
 
+    from PIL import Image, ImageOps
+
     def resize_and_convert_image(image_path, max_width, max_height):
         print(f"  Processing image: {image_path}")
         try:
@@ -87,7 +89,7 @@ def generate(request):
 
                 # 이미지를 축소해야 하는 경우에만 리사이즈 수행
                 if ratio < 1:
-                    img = img.resize(new_size, Image.ANTIALIAS)
+                    img = img.resize(new_size, Image.Resampling.LANCZOS)
                     print(f"  Image resized to {new_size}")
                 else:
                     print("  Image size is within the maximum bounds. No resizing needed.")
