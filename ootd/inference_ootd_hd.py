@@ -52,7 +52,10 @@ class OOTDiffusionHD:
             torch_dtype=torch.float16,
             use_safetensors=True,
         )
-
+        
+        unet_vton.enable_xformers_memory_efficient_attention()
+        unet_garm.enable_xformers_memory_efficient_attention()
+        
         self.pipe = OotdPipeline.from_pretrained(
             MODEL_PATH,
             unet_garm=unet_garm,
