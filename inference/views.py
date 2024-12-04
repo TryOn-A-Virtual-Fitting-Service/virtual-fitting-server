@@ -1,3 +1,4 @@
+import time
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import os
@@ -58,74 +59,112 @@ def generate(request):
     clothing_path = os.path.join(temp_storage_dir, 'clothing.jpg')
     model_path = os.path.join(temp_storage_dir, 'model.jpg')
 
-    # 환경 설정
-    os.environ["U2NET_HOME"] = os.path.join(BASE_DIR, "static", "u2net")  # U2Net 모델 경로
-
     headers = {'User-Agent': 'Mozilla/5.0'}
 
-    # 의류 이미지 다운로드
-    try:
-        clothing_response = requests.get(clothing_url, headers=headers)
-        clothing_response.raise_for_status()
-        with open(clothing_path, 'wb') as destination:
-            destination.write(clothing_response.content)
-    except requests.exceptions.RequestException as e:
+    def download_image(url, path, headers={'User-Agent': 'Mozilla/5.0'}):
+        try:
+            response = requests.get(url, headers=headers)
+            response.raise_for_status()
+            with open(path, 'wb') as destination:
+                destination.write(response.content)
+            print(f"  Image downloaded successfully: {path}")
+        except requests.exceptions.RequestException as e:
+            return str(e)
+        return None
+
+    def resize_and_convert_image(image_path, max_width, max_height):
+        print(f"  Processing image: {image_path}")
+        try:
+            with Image.open(image_path) as img:
+                width, height = img.size
+                if width > max_width or height > max_height:
+                    img.thumbnail((max_width, max_height))
+                
+                if img.mode == 'RGBA':
+                    # 알파 채널 처리
+                    alpha = img.split()[3]
+                    img = img.convert('RGB')
+                    background = Image.new('RGB', img.size, (255, 255, 255))
+                    background.paste(img, mask=alpha)
+                    img = background
+                else:
+                    img = img.convert('RGB')  # RGB 모드로 변환
+                
+                img.save(image_path, 'JPEG')
+                print(f"  Image processed and saved as JPEG: {image_path}")
+        except Exception as e:
+            return str(e)
+        return None
+
+    import concurrent.futures
+
+    # 다운로드 단계 시작 시간 측정
+    start_time_download = time.time()
+    
+    print("Downloading images...")
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        future_clothing = executor.submit(download_image, clothing_url, clothing_path, headers)
+        future_model = executor.submit(download_image, model_url, model_path, headers)
+
+        clothing_error = future_clothing.result()
+        model_error = future_model.result()
+    
+    # 다운로드 단계 종료 시간 및 실행 시간 계산
+    end_time_download = time.time()
+    duration_download = (end_time_download - start_time_download) * 1000  # 밀리초 단위
+    print(f"### Download step : {duration_download:.2f} ms ###")
+    
+    if clothing_error:
         return JsonResponse({
             'message': 'Error downloading clothing file',
-            'data': str(e),
+            'data': clothing_error,
         }, status=500)
 
-    # 모델 이미지 다운로드
-    try:
-        model_response = requests.get(model_url, headers=headers)
-        model_response.raise_for_status()
-        with open(model_path, 'wb') as destination:
-            destination.write(model_response.content)
-    except requests.exceptions.RequestException as e:
+    if model_error:
         return JsonResponse({
             'message': 'Error downloading model file',
-            'data': str(e),
+            'data': model_error,
         }, status=500)
 
-    # # 배경 제거 처리
-    # try:
-    #     clothing_image = Image.open(clothing)
-    #     model_image = Image.open(model)
+    # 리사이징 및 변환 단계 시작 시간 측정
+    start_time_resize = time.time()
 
-    #     # rembg를 사용하여 배경 제거
-    #     clothing_image = remove(clothing_image)  # 세션이 필요 없음
-    #     model_image = remove(model_image)
+    # 이미지 리사이징 및 저장을 병렬로 처리
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        future_clothing = executor.submit(resize_and_convert_image, clothing_path, 1024, 768)
+        future_model = executor.submit(resize_and_convert_image, model_path, 1024, 768)
 
-    #     clothing_image = clothing_image.convert("RGB")
-    #     model_image = model_image.convert("RGB")
+        clothing_resize_error = future_clothing.result()
+        model_resize_error = future_model.result()
 
-    #     # 결과를 저장할 메모리 버퍼
-    #     clothing = BytesIO()
-    #     model = BytesIO()
+    # 리사이징 및 변환 단계 종료 시간 및 실행 시간 계산
+    end_time_resize = time.time()
+    duration_resize = (end_time_resize - start_time_resize) * 1000  # 밀리초 단위
+    print(f"### Resize and conversion : {duration_resize:.2f} ms ###")
 
-    #     # 배경에 흰색 추가
-    #     background_color = (255, 255, 255)  # 흰색
-    #     background_clothing = Image.new("RGB", clothing_image.size, background_color)
-    #     background_model = Image.new("RGB", model_image.size, background_color)
+    if clothing_resize_error:
+        return JsonResponse({
+            'message': 'Error resizing clothing image',
+            'data': clothing_resize_error,
+        }, status=500)
 
-    #     background_clothing.paste(clothing_image, mask=clothing_image.split()[3])
-    #     background_model.paste(model_image, mask=model_image.split()[3])
+    if model_resize_error:
+        return JsonResponse({
+            'message': 'Error resizing model image',
+            'data': model_resize_error,
+        }, status=500)
 
-    #     # JPEG 형식으로 저장
-    #     background_clothing.save(clothing_path, format='JPEG')
-    #     background_model.save(model_path, format='JPEG')
+    # 이미지 저장 단계 시작 시간 측정
+    start_time_save = time.time()
 
-    # except Exception as e:
-    #     return JsonResponse({
-    #         'message': 'Error processing images',
-    #         'data': str(e),
-    #     }, status=500)
+    # 추가적인 저장 단계가 없다면, 이 부분은 생략 가능합니다.
+    # 여기서는 예시로 빈 작업을 수행합니다.
+    print("  Images are already saved during resizing step.")
 
-    # background_clothing.paste(clothing_image, mask=clothing_image.split()[3])
-    # background_model.paste(model_image, mask=model_image.split()[3])
-
-    # background_clothing.save(clothing_path, format='JPEG')
-    # background_model.save(model_path, format='JPEG')
+    # 이미지 저장 단계 종료 시간 및 실행 시간 계산
+    end_time_save = time.time()
+    duration_save = (end_time_save - start_time_save) * 1000  # 밀리초 단위
+    print(f"### Image Saving : {duration_save:.2f} ms ###")
 
     # ############################################ TEST ############################################    
     # return JsonResponse({
@@ -133,17 +172,6 @@ def generate(request):
     # }, status=200)
     # ##############################################################################################
 
-
-
-    # clothing = Image.open(clothing)
-    # model = Image.open(model)
-
-    # clothing = remove(clothing)
-    # model = remove(model)
-
-    # clothing_data = clothing.read()
-    # model_data = model.read()
-    
     from run.run_ootd import run_ootd
 
     image = run_ootd(model_path, clothing_path)
