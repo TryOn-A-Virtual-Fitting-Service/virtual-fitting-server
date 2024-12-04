@@ -181,11 +181,11 @@ def generate(request):
     duration_save = (end_time_save - start_time_save) * 1000  # 밀리초 단위
     print(f"### Image Saving : {duration_save:.2f} ms ###")
 
-    ############################################ TEST ############################################    
-    return JsonResponse({
-        'message': 'Test successful',
-    }, status=200)
-    ##############################################################################################
+    # ############################################ TEST ############################################    
+    # return JsonResponse({
+    #     'message': 'Test successful',
+    # }, status=200)
+    # ##############################################################################################
 
     from run.run_ootd import run_ootd
 
