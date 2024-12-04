@@ -76,12 +76,24 @@ def generate(request):
         print(f"  Processing image: {image_path}")
         try:
             with Image.open(image_path) as img:
+                # 이미지의 현재 크기 가져오기
                 width, height = img.size
-                if width > max_width or height > max_height:
-                    img.thumbnail((max_width, max_height))
-                
+
+                # 축소 비율 계산 (비율을 유지하면서 최대 크기 안에 들어오도록)
+                ratio = min(max_width / width, max_height / height, 1)
+
+                # 새로운 크기 계산
+                new_size = (int(width * ratio), int(height * ratio))
+
+                # 이미지를 축소해야 하는 경우에만 리사이즈 수행
+                if ratio < 1:
+                    img = img.resize(new_size, Image.ANTIALIAS)
+                    print(f"  Image resized to {new_size}")
+                else:
+                    print("  Image size is within the maximum bounds. No resizing needed.")
+
+                # 알파 채널 처리
                 if img.mode == 'RGBA':
-                    # 알파 채널 처리
                     alpha = img.split()[3]
                     img = img.convert('RGB')
                     background = Image.new('RGB', img.size, (255, 255, 255))
@@ -89,7 +101,8 @@ def generate(request):
                     img = background
                 else:
                     img = img.convert('RGB')  # RGB 모드로 변환
-                
+
+                # 이미지를 JPEG로 저장
                 img.save(image_path, 'JPEG')
                 print(f"  Image processed and saved as JPEG: {image_path}")
         except Exception as e:
