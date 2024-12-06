@@ -26,10 +26,10 @@ import torch.nn.functional as F
 from transformers import AutoProcessor, CLIPVisionModelWithProjection
 from transformers import CLIPTextModel, CLIPTokenizer
 
-VIT_PATH = "../checkpoints/clip-vit-large-patch14"
-VAE_PATH = "../checkpoints/ootd"
-UNET_PATH = "../checkpoints/ootd/ootd_dc/checkpoint-36000"
-MODEL_PATH = "../checkpoints/ootd"
+VIT_PATH = "./checkpoints/clip-vit-large-patch14"
+VAE_PATH = "./checkpoints/ootd"
+UNET_PATH = "./checkpoints/ootd/ootd_dc/checkpoint-36000"
+MODEL_PATH = "./checkpoints/ootd"
 
 class OOTDiffusionDC:
 
@@ -63,7 +63,7 @@ class OOTDiffusionDC:
             unet_vton=unet_vton,
             vae=vae,
             torch_dtype=torch.float16,
-            variant="fp16",
+            # variant="fp16",
             use_safetensors=True,
             safety_checker=None,
             requires_safety_checker=False,
