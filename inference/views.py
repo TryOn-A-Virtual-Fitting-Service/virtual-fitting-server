@@ -38,6 +38,7 @@ def generate(request):
         data = json.loads(request.body)
         clothing_url = data.get('clothing')
         model_url = data.get('model')
+        category = data.get('category')
     except json.JSONDecodeError:
         return JsonResponse({
             'message': 'Invalid JSON input',
@@ -192,8 +193,19 @@ def generate(request):
     # ##############################################################################################
 
     from run.run_ootd import run_ootd
+    if int(category) == 0: # Upper
+        category = 0
+        model_type = 'hd'
+    elif int(category) == 1: # Lower
+        category = 1
+        model_type = 'dc'
+    else:
+        return JsonResponse({
+            'message': 'Invalid category',
+            'data': "Category must be 0 (upper) or 1 (lower)",
+        }, status=400)
 
-    image = run_ootd(model_path, clothing_path)
+    image = run_ootd(model_path, clothing_path, model_type=model_type, category=category, scale=2.0, step=40)
     
     torch.cuda.empty_cache()
     torch.cuda.ipc_collect()
