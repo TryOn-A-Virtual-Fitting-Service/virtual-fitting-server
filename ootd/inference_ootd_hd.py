@@ -13,6 +13,8 @@ import random
 import time
 import pdb
 
+from accelerate import Accelerator
+
 from pipelines_ootd.pipeline_ootd import OotdPipeline
 from pipelines_ootd.unet_garm_2d_condition import UNetGarm2DConditionModel
 from pipelines_ootd.unet_vton_2d_condition import UNetVton2DConditionModel
@@ -33,6 +35,9 @@ class OOTDiffusionHD:
 
     def __init__(self, gpu_id):
         self.gpu_id = 'cuda:' + str(gpu_id)
+
+        self.accelerator = Accelerator(mixed_precision='fp16')
+
         print("Current working directory:", os.getcwd())
         vae = AutoencoderKL.from_pretrained(
             VAE_PATH,
@@ -66,7 +71,7 @@ class OOTDiffusionHD:
             use_safetensors=True,
             safety_checker=None,
             requires_safety_checker=False,
-        ).to(self.gpu_id)
+        ).to(self.accelerator.device)
 
         self.pipe.scheduler = UniPCMultistepScheduler.from_config(self.pipe.scheduler.config)
         
