@@ -111,7 +111,8 @@ class OOTDiffusionHD:
 
         with torch.no_grad():
             prompt_image = self.auto_processor(images=image_garm, return_tensors="pt")
-            prompt_image = self.image_encoder(prompt_image.data['pixel_values']).image_embeds
+            prompt_image = prompt_image.data['pixel_values'].to(self.accelerator.device, dtype=torch.float16)
+            prompt_image = self.image_encoder(prompt_image).image_embeds
             prompt_image = prompt_image.unsqueeze(1)
             if model_type == 'hd':
                 prompt_embeds = self.text_encoder(self.tokenize_captions([""], 2))[0]
