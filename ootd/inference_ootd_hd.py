@@ -32,14 +32,11 @@ UNET_PATH = "./checkpoints/ootd/ootd_hd/checkpoint-36000"
 MODEL_PATH = "./checkpoints/ootd"
 
 class OOTDiffusionHD:
-
     def __init__(self, gpu_id, accelerator):
 
         self.accelerator = accelerator
         self.gpu_id = self.accelerator.device
-        # self.accelerator = Accelerator(mixed_precision='fp16')
 
-        print("Current working directory:", os.getcwd())
         vae = AutoencoderKL.from_pretrained(
             VAE_PATH,
             subfolder="vae",
@@ -58,38 +55,34 @@ class OOTDiffusionHD:
             torch_dtype=torch.float16,
             use_safetensors=True,
         )
-        
+
         unet_vton.enable_xformers_memory_efficient_attention()
         unet_garm.enable_xformers_memory_efficient_attention()
-        
-        vae, unet_garm, unet_vton = self.accelerator.prepare(vae, unet_garm, unet_vton)
 
+        # 먼저 text_encoder, image_encoder를 로드
+        self.auto_processor = AutoProcessor.from_pretrained(VIT_PATH)
+        self.image_encoder = CLIPVisionModelWithProjection.from_pretrained(VIT_PATH)
+        self.tokenizer = CLIPTokenizer.from_pretrained(MODEL_PATH, subfolder="tokenizer")
+        self.text_encoder = CLIPTextModel.from_pretrained(MODEL_PATH, subfolder="text_encoder")
+
+        # vae, unet_garm, unet_vton, text_encoder, image_encoder 모두 accelerator.prepare로 감싼다.
+        vae, unet_garm, unet_vton, self.text_encoder, self.image_encoder = self.accelerator.prepare(
+            vae, unet_garm, unet_vton, self.text_encoder, self.image_encoder
+        )
+
+        # pipeline을 생성할 때 준비된 module들을 전달한다.
         self.pipe = OotdPipeline.from_pretrained(
             MODEL_PATH,
             unet_garm=unet_garm,
             unet_vton=unet_vton,
             vae=vae,
+            text_encoder=self.text_encoder,
+            tokenizer=self.tokenizer,
             torch_dtype=torch.float16,
-            # variant="fp16",
             use_safetensors=True,
             safety_checker=None,
             requires_safety_checker=False,
         ).to(self.accelerator.device)
-
-        self.pipe.scheduler = UniPCMultistepScheduler.from_config(self.pipe.scheduler.config)
-        
-        self.auto_processor = AutoProcessor.from_pretrained(VIT_PATH)
-        self.image_encoder = CLIPVisionModelWithProjection.from_pretrained(VIT_PATH)
-
-        self.tokenizer = CLIPTokenizer.from_pretrained(
-            MODEL_PATH,
-            subfolder="tokenizer",
-        )
-        self.text_encoder = CLIPTextModel.from_pretrained(
-            MODEL_PATH,
-            subfolder="text_encoder",
-        )
-
 
     def tokenize_captions(self, captions, max_length):
         inputs = self.tokenizer(
