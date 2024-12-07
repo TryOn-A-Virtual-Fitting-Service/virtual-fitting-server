@@ -115,7 +115,8 @@ class OOTDiffusionHD:
             prompt_image = self.image_encoder(prompt_image).image_embeds
             prompt_image = prompt_image.unsqueeze(1)
             if model_type == 'hd':
-                prompt_embeds = self.text_encoder(self.tokenize_captions([""], 2))[0]
+                input_ids = self.tokenize_captions([""], 2).to(self.accelerator.device)
+                prompt_embeds = self.text_encoder(input_ids)[0]
                 prompt_embeds[:, 1:] = prompt_image[:]
             elif model_type == 'dc':
                 prompt_embeds = self.text_encoder(self.tokenize_captions([category], 3))[0]
