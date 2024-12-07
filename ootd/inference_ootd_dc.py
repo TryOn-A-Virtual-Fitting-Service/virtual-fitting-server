@@ -34,9 +34,8 @@ MODEL_PATH = "./checkpoints/ootd"
 class OOTDiffusionDC:
 
     def __init__(self, gpu_id, accelerator):
-        self.gpu_id = 'cuda:' + str(gpu_id)
-
         self.accelerator = accelerator
+        self.gpu_id = self.accelerator.device
         # self.accelerator = Accelerator(mixed_precision='fp16')
 
         vae = AutoencoderKL.from_pretrained(
