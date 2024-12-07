@@ -62,6 +62,8 @@ class OOTDiffusionHD:
         unet_vton.enable_xformers_memory_efficient_attention()
         unet_garm.enable_xformers_memory_efficient_attention()
         
+        vae, unet_garm, unet_vton = self.accelerator.prepare(vae, unet_garm, unet_vton)
+
         self.pipe = OotdPipeline.from_pretrained(
             MODEL_PATH,
             unet_garm=unet_garm,
@@ -78,10 +80,6 @@ class OOTDiffusionHD:
         
         self.auto_processor = AutoProcessor.from_pretrained(VIT_PATH)
         self.image_encoder = CLIPVisionModelWithProjection.from_pretrained(VIT_PATH)
-
-        self.image_encoder, self.text_encoder = self.accelerator.prepare(
-            self.image_encoder, self.text_encoder
-        )
 
         self.tokenizer = CLIPTokenizer.from_pretrained(
             MODEL_PATH,
