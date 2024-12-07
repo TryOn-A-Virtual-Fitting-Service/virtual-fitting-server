@@ -79,10 +79,6 @@ class OOTDiffusionDC:
         self.auto_processor = AutoProcessor.from_pretrained(VIT_PATH)
         self.image_encoder = CLIPVisionModelWithProjection.from_pretrained(VIT_PATH)
 
-        self.image_encoder, self.text_encoder = self.accelerator.prepare(
-            self.image_encoder, self.text_encoder
-        )
-
         self.tokenizer = CLIPTokenizer.from_pretrained(
             MODEL_PATH,
             subfolder="tokenizer",
@@ -92,6 +88,9 @@ class OOTDiffusionDC:
             subfolder="text_encoder",
         )
 
+        self.image_encoder, self.text_encoder = self.accelerator.prepare(
+            self.image_encoder, self.text_encoder
+        )
 
     def tokenize_captions(self, captions, max_length):
         inputs = self.tokenizer(
