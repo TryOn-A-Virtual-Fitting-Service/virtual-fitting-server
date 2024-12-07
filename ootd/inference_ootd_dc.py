@@ -88,10 +88,6 @@ class OOTDiffusionDC:
             subfolder="text_encoder",
         )
 
-        self.image_encoder, self.text_encoder = self.accelerator.prepare(
-            self.image_encoder, self.text_encoder
-        )
-
     def tokenize_captions(self, captions, max_length):
         inputs = self.tokenizer(
             captions, max_length=max_length, padding="max_length", truncation=True, return_tensors="pt"

@@ -62,8 +62,6 @@ class OOTDiffusionHD:
         unet_vton.enable_xformers_memory_efficient_attention()
         unet_garm.enable_xformers_memory_efficient_attention()
         
-        vae, unet_garm, unet_vton = self.accelerator.prepare(vae, unet_garm, unet_vton)
-
         self.pipe = OotdPipeline.from_pretrained(
             MODEL_PATH,
             unet_garm=unet_garm,
