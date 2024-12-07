@@ -92,16 +92,16 @@ class OOTDiffusionHD:
 
 
     def __call__(self,
-                model_type='hd',
-                category='upperbody',
-                image_garm=None,
-                image_vton=None,
-                mask=None,
-                image_ori=None,
-                num_samples=1,
-                num_steps=20,
-                image_scale=1.0,
-                seed=-1,
+            model_type='hd',
+            category='upperbody',
+            image_garm=None,
+            image_vton=None,
+            mask=None,
+            image_ori=None,
+            num_samples=1,
+            num_steps=20,
+            image_scale=1.0,
+            seed=-1,
     ):
         if seed == -1:
             random.seed(time.time())
@@ -111,6 +111,7 @@ class OOTDiffusionHD:
 
         with torch.no_grad():
             prompt_image = self.auto_processor(images=image_garm, return_tensors="pt")
+            # 입력 텐서를 모델과 동일한 디바이스 및 dtype으로 변환
             prompt_image = prompt_image.data['pixel_values'].to(self.accelerator.device, dtype=torch.float16)
             prompt_image = self.image_encoder(prompt_image).image_embeds
             prompt_image = prompt_image.unsqueeze(1)
@@ -119,7 +120,8 @@ class OOTDiffusionHD:
                 prompt_embeds = self.text_encoder(input_ids)[0]
                 prompt_embeds[:, 1:] = prompt_image[:]
             elif model_type == 'dc':
-                prompt_embeds = self.text_encoder(self.tokenize_captions([category], 3))[0]
+                input_ids = self.tokenize_captions([category], 3).to(self.accelerator.device)
+                prompt_embeds = self.text_encoder(input_ids)[0]
                 prompt_embeds = torch.cat([prompt_embeds, prompt_image], dim=1)
             else:
                 raise ValueError("model_type must be \'hd\' or \'dc\'!")
