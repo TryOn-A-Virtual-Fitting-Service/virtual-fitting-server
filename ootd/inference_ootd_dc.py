@@ -57,6 +57,11 @@ class OOTDiffusionDC:
             use_safetensors=True,
         )
 
+        unet_vton.enable_xformers_memory_efficient_attention()
+        unet_garm.enable_xformers_memory_efficient_attention()
+
+        vae, unet_garm, unet_vton = self.accelerator.prepare(vae, unet_garm, unet_vton)
+
         self.pipe = OotdPipeline.from_pretrained(
             MODEL_PATH,
             unet_garm=unet_garm,
@@ -72,7 +77,11 @@ class OOTDiffusionDC:
         self.pipe.scheduler = UniPCMultistepScheduler.from_config(self.pipe.scheduler.config)
         
         self.auto_processor = AutoProcessor.from_pretrained(VIT_PATH)
-        self.image_encoder = CLIPVisionModelWithProjection.from_pretrained(VIT_PATH).to(self.gpu_id)
+        self.image_encoder = CLIPVisionModelWithProjection.from_pretrained(VIT_PATH)
+
+        self.image_encoder, self.text_encoder = self.accelerator.prepare(
+            self.image_encoder, self.text_encoder
+        )
 
         self.tokenizer = CLIPTokenizer.from_pretrained(
             MODEL_PATH,
@@ -81,7 +90,7 @@ class OOTDiffusionDC:
         self.text_encoder = CLIPTextModel.from_pretrained(
             MODEL_PATH,
             subfolder="text_encoder",
-        ).to(self.gpu_id)
+        )
 
 
     def tokenize_captions(self, captions, max_length):
@@ -110,14 +119,14 @@ class OOTDiffusionDC:
         generator = torch.manual_seed(seed)
 
         with torch.no_grad():
-            prompt_image = self.auto_processor(images=image_garm, return_tensors="pt").to(self.gpu_id)
+            prompt_image = self.auto_processor(images=image_garm, return_tensors="pt")
             prompt_image = self.image_encoder(prompt_image.data['pixel_values']).image_embeds
             prompt_image = prompt_image.unsqueeze(1)
             if model_type == 'hd':
-                prompt_embeds = self.text_encoder(self.tokenize_captions([""], 2).to(self.gpu_id))[0]
+                prompt_embeds = self.text_encoder(self.tokenize_captions([""], 2))[0]
                 prompt_embeds[:, 1:] = prompt_image[:]
             elif model_type == 'dc':
-                prompt_embeds = self.text_encoder(self.tokenize_captions([category], 3).to(self.gpu_id))[0]
+                prompt_embeds = self.text_encoder(self.tokenize_captions([category], 3))[0]
                 prompt_embeds = torch.cat([prompt_embeds, prompt_image], dim=1)
             else:
                 raise ValueError("model_type must be \'hd\' or \'dc\'!")
