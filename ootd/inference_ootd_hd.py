@@ -33,10 +33,11 @@ MODEL_PATH = "./checkpoints/ootd"
 
 class OOTDiffusionHD:
 
-    def __init__(self, gpu_id):
+    def __init__(self, gpu_id, accelerator):
         self.gpu_id = 'cuda:' + str(gpu_id)
 
-        self.accelerator = Accelerator(mixed_precision='fp16')
+        self.accelerator = accelerator
+        # self.accelerator = Accelerator(mixed_precision='fp16')
 
         print("Current working directory:", os.getcwd())
         vae = AutoencoderKL.from_pretrained(

@@ -17,6 +17,9 @@ import json
 import onnxruntime as ort
 # from OOTDiffusion.run.run_ootd import run_ootd
 
+from accelerate import Accelerator
+accelerator = Accelerator(mixed_precision='fp16')
+
 @csrf_exempt
 def generate(request):
     if request.method != "POST":
