@@ -208,7 +208,7 @@ def generate(request):
             'data': "Category must be 0 (upper) or 1 (lower)",
         }, status=400)
 
-    image = run_ootd(model_path, clothing_path, model_type=model_type, category=category, scale=2.0, step=40)
+    image = run_ootd(model_path, clothing_path, accelerator, model_type=model_type, category=category, scale=2.0, step=40)
     
     torch.cuda.empty_cache()
     torch.cuda.ipc_collect()
