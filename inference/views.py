@@ -208,11 +208,16 @@ def generate(request):
             'message': 'Invalid category',
             'data': "Category must be 0 (upper) or 1 (lower)",
         }, status=400)
-
-    image = run_ootd(model_path, clothing_path, accelerator, model_type=model_type, category=category, scale=2.0, step=40)
-    
-    torch.cuda.empty_cache()
-    torch.cuda.ipc_collect()
+    try:
+        image = run_ootd(model_path, clothing_path, accelerator, model_type=model_type, category=category, scale=2.0, step=40)
+    except Exception as e:
+        return JsonResponse({
+            'message': 'Error running OOTD model',
+            'data': str(e),
+        }, status=500)
+    finally:
+        torch.cuda.empty_cache()
+        torch.cuda.ipc_collect()
 
     # 모델 사이즈에 맞게 이미지 크기 조정
     with Image.open(model_path) as model_img:
