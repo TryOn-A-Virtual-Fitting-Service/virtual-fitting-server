@@ -37,8 +37,8 @@ def generate(request):
     # print("Request files: ")
     # print(request.FILES)
 
-    # gc.collect()
-    # torch.cuda.empty_cache()
+    gc.collect()
+    torch.cuda.empty_cache()
 
     print(f"Given protocol is : {request.scheme}")
     try:
@@ -219,9 +219,7 @@ def generate(request):
             'message': 'Error running OOTD model',
             'data': str(e),
         }, status=500)
-    finally:
-        torch.cuda.empty_cache()
-        gc.collect()
+    
 
     # 모델 사이즈에 맞게 이미지 크기 조정
     with Image.open(model_path) as model_img:
@@ -237,6 +235,9 @@ def generate(request):
             'message': 'Error saving result file',
             'data': str(e),
         }, status=500)
+    
+    torch.cuda.empty_cache()
+    gc.collect()
     
     return JsonResponse({
         'message': 'Inference successful',

@@ -2,6 +2,7 @@ from pathlib import Path
 from PIL import Image
 import sys
 import os
+import gc
 from run.utils_ootd import get_mask_location
 from preprocess.openpose.run_openpose import OpenPose
 from preprocess.humanparsing.run_parsing import Parsing
@@ -9,10 +10,10 @@ from ootd.inference_ootd_hd import OOTDiffusionHD
 from ootd.inference_ootd_dc import OOTDiffusionDC
 
 def run_ootd(model_path, cloth_path, accelerator, gpu_id=0, model_type="hd", category=0, scale=2.0, step=40, sample=1, seed=-1):
-    
+    import gc
     import torch
+    gc.collect()
     torch.cuda.empty_cache()
-    torch.cuda.ipc_collect()
     
     openpose_model = OpenPose(gpu_id)
     parsing_model = Parsing(gpu_id)
@@ -61,6 +62,6 @@ def run_ootd(model_path, cloth_path, accelerator, gpu_id=0, model_type="hd", cat
         image = images[0]
 
     torch.cuda.empty_cache()
-    torch.cuda.ipc_collect()
+    gc.collect()
 
     return image
