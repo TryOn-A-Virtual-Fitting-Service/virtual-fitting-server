@@ -4,7 +4,6 @@ PROJECT_ROOT = Path(__file__).absolute().parents[0].absolute()
 sys.path.insert(0, str(PROJECT_ROOT))
 import os
 import torch
-torch.set_float32_matmul_precision('high')
 import random
 import time
 import threading
