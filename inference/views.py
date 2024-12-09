@@ -140,7 +140,7 @@ def generate(request):
     # 다운로드 단계 종료 시간 및 실행 시간 계산
     end_time_download = time.time()
     duration_download = (end_time_download - start_time_download) * 1000  # 밀리초 단위
-    print(f"### Download step : {duration_download:.2f} ms ###")
+    print(f"### Download step : {duration_download:.2f} ms ###\n")
     
     if clothing_error:
         return JsonResponse({
@@ -168,7 +168,7 @@ def generate(request):
     # 리사이징 및 변환 단계 종료 시간 및 실행 시간 계산
     end_time_resize = time.time()
     duration_resize = (end_time_resize - start_time_resize) * 1000  # 밀리초 단위
-    print(f"### Resize and conversion : {duration_resize:.2f} ms ###")
+    print(f"### Resize and conversion : {duration_resize:.2f} ms ###\n")
 
     if clothing_resize_error:
         return JsonResponse({
@@ -192,7 +192,7 @@ def generate(request):
     # 이미지 저장 단계 종료 시간 및 실행 시간 계산
     end_time_save = time.time()
     duration_save = (end_time_save - start_time_save) * 1000  # 밀리초 단위
-    print(f"### Image Saving : {duration_save:.2f} ms ###")
+    print(f"### Image Saving : {duration_save:.2f} ms ###\n")
 
     # ############################################ TEST ############################################    
     # return JsonResponse({
