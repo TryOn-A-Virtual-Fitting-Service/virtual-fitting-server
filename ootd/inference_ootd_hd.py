@@ -26,6 +26,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from transformers import AutoProcessor, CLIPVisionModelWithProjection
 from transformers import CLIPTextModel, CLIPTokenizer
+import threading
 
 VIT_PATH = "./checkpoints/clip-vit-large-patch14"
 VAE_PATH = "./checkpoints/ootd"
@@ -141,6 +142,10 @@ class OOTDiffusionHD:
                         generator=generator,
             ).images
         
-        gc.collect()
-        torch.cuda.empty_cache()
+        def cleanup():
+            gc.collect()
+            torch.cuda.empty_cache()
+
+        cleanup_thread = threading.Thread(target=cleanup)
+        cleanup_thread.start()
         return images
