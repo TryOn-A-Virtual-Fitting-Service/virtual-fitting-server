@@ -58,8 +58,8 @@ class OOTDiffusionHD:
             use_safetensors=True,
         )
         
-        unet_vton.enable_xformers_memory_efficient_attention()
-        unet_garm.enable_xformers_memory_efficient_attention()
+        # unet_vton.enable_xformers_memory_efficient_attention()
+        # unet_garm.enable_xformers_memory_efficient_attention()
         
         vae, unet_garm, unet_vton = self.accelerator.prepare(vae, unet_garm, unet_vton)
 

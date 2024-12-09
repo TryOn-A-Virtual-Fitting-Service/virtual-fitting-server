@@ -37,9 +37,6 @@ def generate(request):
     # print("Request files: ")
     # print(request.FILES)
 
-    gc.collect()
-    torch.cuda.empty_cache()
-
     print(f"Given protocol is : {request.scheme}")
     try:
         data = json.loads(request.body)
@@ -235,10 +232,7 @@ def generate(request):
             'message': 'Error saving result file',
             'data': str(e),
         }, status=500)
-    
-    torch.cuda.empty_cache()
-    gc.collect()
-    
+
     return JsonResponse({
         'message': 'Inference successful',
         'data': result_filename,
