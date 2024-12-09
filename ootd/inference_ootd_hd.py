@@ -149,6 +149,10 @@ class OOTDiffusionHD:
                 generator=generator,
             ).images
 
+            del prompt_image
+            del prompt_embeds
+            gc.collect()
+
         return images
 
     def free_memory(self):
