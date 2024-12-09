@@ -89,7 +89,8 @@ def run_ootd(model_path, cloth_path, accelerator, gpu_id=0, model_type="hd", cat
     del category_dict
     del category_dict_utils
     gc.collect()
-    torch.cuda.empty_cache()
+    with torch.no_grad():
+        torch.cuda.empty_cache()
 
     image = None
     if type(images) == list:

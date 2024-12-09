@@ -148,7 +148,7 @@ class OOTDiffusionHD:
                 num_images_per_prompt=num_samples,
                 generator=generator,
             ).images
-            
+
         return images
 
     def free_memory(self):
@@ -157,7 +157,8 @@ class OOTDiffusionHD:
         del self.text_encoder
         del self.auto_processor
         gc.collect()
-        torch.cuda.empty_cache()
+        with torch.no_grad():
+            torch.cuda.empty_cache()
 
     def __del__(self):
         self.free_memory()
