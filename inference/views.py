@@ -18,6 +18,8 @@ accelerator = Accelerator(mixed_precision='fp16')
 
 @csrf_exempt
 def generate(request):
+    total_start_time = time.time()
+
     if request.method != "POST":
         return JsonResponse({
             'message': 'Only POST is allowed',
@@ -222,6 +224,10 @@ def generate(request):
             'message': 'Error saving result file',
             'data': str(e),
         }, status=500)
+
+    total_end_time = time.time()
+    total_duration = total_end_time - total_start_time
+    print(f"### Total duration: {total_duration:.2f} seconds ###\n")
 
     return JsonResponse({
         'message': 'Inference successful',
