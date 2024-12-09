@@ -148,14 +148,7 @@ class OOTDiffusionHD:
                 num_images_per_prompt=num_samples,
                 generator=generator,
             ).images
-
-        def cleanup():
-            gc.collect()
-            torch.cuda.empty_cache()
-
-        cleanup_thread = threading.Thread(target=cleanup)
-        cleanup_thread.start()
-
+            
         return images
 
     def free_memory(self):
@@ -163,6 +156,7 @@ class OOTDiffusionHD:
         del self.image_encoder
         del self.text_encoder
         del self.auto_processor
+        gc.collect()
         torch.cuda.empty_cache()
 
     def __del__(self):
