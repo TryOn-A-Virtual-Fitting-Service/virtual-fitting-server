@@ -4,10 +4,6 @@ from preprocess.openpose.run_openpose import OpenPose
 from preprocess.humanparsing.run_parsing import Parsing
 from ootd.inference_ootd_hd import OOTDiffusionHD
 from ootd.inference_ootd_dc import OOTDiffusionDC
-import threading
-import gc
-import torch
-
 
 def run_ootd(model_path, cloth_path, accelerator, gpu_id=0, model_type="hd", category=0, scale=2.0, step=40, sample=1, seed=-1):
     openpose_model = OpenPose(gpu_id)
@@ -52,13 +48,6 @@ def run_ootd(model_path, cloth_path, accelerator, gpu_id=0, model_type="hd", cat
         image_scale=scale,
         seed=seed,
     )
-
-    def clear_vram_cache():
-        gc.collect()
-        torch.cuda.empty_cache()
-
-    clear_cache_thread = threading.Thread(target=clear_vram_cache, daemon=True)
-    clear_cache_thread.start()
 
     image = None
     if type(images) == list:

@@ -6,6 +6,8 @@ import os
 import torch
 import random
 import time
+import threading
+import gc
 
 from pipelines_ootd.pipeline_ootd import OotdPipeline
 from pipelines_ootd.unet_garm_2d_condition import UNetGarm2DConditionModel
@@ -127,5 +129,12 @@ class OOTDiffusionHD:
                         num_images_per_prompt=num_samples,
                         generator=generator,
             ).images
+
+        def clear_vram_cache():
+            gc.collect()
+            torch.cuda.empty_cache()
+
+        clear_cache_thread = threading.Thread(target=clear_vram_cache, daemon=True)
+        clear_cache_thread.start()
 
         return images
