@@ -41,14 +41,11 @@ class OpenPose:
         else:
             raise ValueError
         with torch.no_grad():
-            # AMP 적용: PyTorch 연산 부분만 감싼다.
-            # numpy 기반 연산(cv2.resize 등)은 AMP 영역 밖에 둬서 float16 변환을 회피한다.
-            with torch.cuda.amp.autocast():
-                input_image = HWC3(input_image)
-                input_image = resize_image(input_image, resolution)
-                H, W, C = input_image.shape
-                assert (H == 512 and W == 384), 'Incorrect input image shape'
-                pose, detected_map = self.preprocessor(input_image, hand_and_face=False)
+            input_image = HWC3(input_image)
+            input_image = resize_image(input_image, resolution)
+            H, W, C = input_image.shape
+            assert (H == 512 and W == 384), 'Incorrect input image shape'
+            pose, detected_map = self.preprocessor(input_image, hand_and_face=False)
 
             candidate = pose['bodies']['candidate']
             subset = pose['bodies']['subset'][0][:18]
@@ -71,11 +68,17 @@ class OpenPose:
                 candidate[i][1] *= 512
 
             keypoints = {"pose_keypoints_2d": candidate}
+            # with open("/home/aigc/ProjectVTON/OpenPose/keypoints/keypoints.json", "w") as f:
+            #     json.dump(keypoints, f)
+            #
+            # # print(candidate)
+            # output_image = cv2.resize(cv2.cvtColor(detected_map, cv2.COLOR_BGR2RGB), (768, 1024))
+            # cv2.imwrite('/home/aigc/ProjectVTON/OpenPose/keypoints/out_pose.jpg', output_image)
 
         return keypoints
 
 
 if __name__ == '__main__':
 
-    model = OpenPose(0)
+    model = OpenPose()
     model('./images/bad_model.jpg')
