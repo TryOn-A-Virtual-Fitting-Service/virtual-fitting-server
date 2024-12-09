@@ -84,8 +84,8 @@ class OOTDiffusionDC:
             subfolder="text_encoder",
         )
 
-        self.pipe.unet_garm = torch.compile(self.pipe.unet_garm)
-        self.pipe.unet_vton = torch.compile(self.pipe.unet_vton)
+        # self.pipe.unet_garm = torch.compile(self.pipe.unet_garm)
+        # self.pipe.unet_vton = torch.compile(self.pipe.unet_vton)
 
     def tokenize_captions(self, captions, max_length):
         inputs = self.tokenizer(
