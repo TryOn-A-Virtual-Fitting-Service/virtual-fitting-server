@@ -76,6 +76,8 @@ def run_ootd(model_path, cloth_path, accelerator, gpu_id=0, model_type="hd", cat
     )
     print(f"OOTD model finished")
 
+    model.cleanup()
+
     image = None
     if type(images) == list:
         image = images[0]

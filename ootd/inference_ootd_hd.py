@@ -99,6 +99,14 @@ class OOTDiffusionHD:
         )
         return inputs.input_ids
 
+    def cleanup(self):
+        del self.pipe
+        del self.auto_processor
+        del self.image_encoder
+        del self.tokenizer
+        del self.text_encoder
+        gc.collect()
+        torch.cuda.empty_cache()
 
     def __call__(self,
                 model_type='hd',
@@ -142,10 +150,5 @@ class OOTDiffusionHD:
                         generator=generator,
             ).images
         
-        def cleanup():
-            gc.collect()
-            torch.cuda.empty_cache()
-
-        cleanup_thread = threading.Thread(target=cleanup)
-        cleanup_thread.start()
         return images
+    
