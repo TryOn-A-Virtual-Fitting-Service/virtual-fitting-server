@@ -77,6 +77,20 @@ def run_ootd(model_path, cloth_path, accelerator, gpu_id=0, model_type="hd", cat
     print(f"OOTD model finished")
 
     model.cleanup()
+    del model
+    del openpose_model
+    del parsing_model
+    del model_img
+    del cloth_img
+    del masked_vton_img
+    del mask
+    del mask_gray
+    del keypoints
+    del model_parse
+    del category_dict
+    del category_dict_utils
+    gc.collect()
+    torch.cuda.empty_cache()
 
     image = None
     if type(images) == list:
@@ -84,7 +98,5 @@ def run_ootd(model_path, cloth_path, accelerator, gpu_id=0, model_type="hd", cat
     if len(images) == 1:
         image = images[0]
 
-    torch.cuda.empty_cache()
-    gc.collect()
 
     return image
