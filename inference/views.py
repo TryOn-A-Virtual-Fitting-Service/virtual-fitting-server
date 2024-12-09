@@ -15,6 +15,7 @@ import torch
 from io import BytesIO
 import json
 import onnxruntime as ort
+import gc
 # from OOTDiffusion.run.run_ootd import run_ootd
 
 from accelerate import Accelerator
@@ -36,8 +37,8 @@ def generate(request):
     # print("Request files: ")
     # print(request.FILES)
 
-    torch.cuda.empty_cache()
-    torch.cuda.ipc_collect()
+    # gc.collect()
+    # torch.cuda.empty_cache()
 
     print(f"Given protocol is : {request.scheme}")
     try:
@@ -220,7 +221,7 @@ def generate(request):
         }, status=500)
     finally:
         torch.cuda.empty_cache()
-        torch.cuda.ipc_collect()
+        gc.collect()
 
     # 모델 사이즈에 맞게 이미지 크기 조정
     with Image.open(model_path) as model_img:
