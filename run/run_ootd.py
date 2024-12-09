@@ -76,7 +76,6 @@ def run_ootd(model_path, cloth_path, accelerator, gpu_id=0, model_type="hd", cat
     )
     print(f"OOTD model finished")
 
-    model.cleanup()
     del model
     del openpose_model
     del parsing_model
