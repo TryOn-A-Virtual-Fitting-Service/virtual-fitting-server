@@ -7,15 +7,10 @@ from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import os
 import requests
-import shutil
 from datetime import datetime
-from rembg import remove
 from PIL import Image
-import torch
-from io import BytesIO
 import json
-import onnxruntime as ort
-import gc
+
 # from OOTDiffusion.run.run_ootd import run_ootd
 
 from accelerate import Accelerator
@@ -82,7 +77,7 @@ def generate(request):
             return str(e)
         return None
 
-    from PIL import Image, ImageOps
+    
 
     def resize_and_convert_image(image_path, max_width, max_height):
         print(f"  Processing image: {image_path}")
@@ -191,11 +186,6 @@ def generate(request):
     duration_save = (end_time_save - start_time_save) * 1000  # 밀리초 단위
     print(f"### Image Saving : {duration_save:.2f} ms ###\n")
 
-    # ############################################ TEST ############################################    
-    # return JsonResponse({
-    #     'message': 'Test successful',
-    # }, status=200)
-    # ##############################################################################################
 
     from run.run_ootd import run_ootd
     if int(category) == 0: # Upper

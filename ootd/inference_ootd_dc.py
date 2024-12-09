@@ -1,19 +1,11 @@
-import pdb
 from pathlib import Path
 import sys
 PROJECT_ROOT = Path(__file__).absolute().parents[0].absolute()
 sys.path.insert(0, str(PROJECT_ROOT))
 import os
 import torch
-import numpy as np
-from PIL import Image
-import cv2
-
 import random
 import time
-import pdb
-
-from accelerate import Accelerator
 
 from pipelines_ootd.pipeline_ootd import OotdPipeline
 from pipelines_ootd.unet_garm_2d_condition import UNetGarm2DConditionModel
@@ -21,8 +13,6 @@ from pipelines_ootd.unet_vton_2d_condition import UNetVton2DConditionModel
 from diffusers import UniPCMultistepScheduler
 from diffusers import AutoencoderKL
 
-import torch.nn as nn
-import torch.nn.functional as F
 from transformers import AutoProcessor, CLIPVisionModelWithProjection
 from transformers import CLIPTextModel, CLIPTokenizer
 
