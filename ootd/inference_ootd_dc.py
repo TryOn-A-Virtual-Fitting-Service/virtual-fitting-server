@@ -68,7 +68,7 @@ class OOTDiffusionDC:
             requires_safety_checker=False,
         ).to(self.accelerator.device)
 
-        self.pipe.enable_attention_slicing()
+        # self.pipe.enable_attention_slicing()
 
         self.pipe.scheduler = UniPCMultistepScheduler.from_config(self.pipe.scheduler.config)
         
