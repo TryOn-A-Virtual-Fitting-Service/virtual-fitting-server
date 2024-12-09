@@ -50,8 +50,8 @@ class OOTDiffusionDC:
             use_safetensors=True,
         )
 
-        # unet_vton.enable_xformers_memory_efficient_attention()
-        # unet_garm.enable_xformers_memory_efficient_attention()
+        unet_vton.enable_xformers_memory_efficient_attention()
+        unet_garm.enable_xformers_memory_efficient_attention()
 
         vae, unet_garm, unet_vton = self.accelerator.prepare(vae, unet_garm, unet_vton)
 
@@ -67,6 +67,8 @@ class OOTDiffusionDC:
             requires_safety_checker=False,
         ).to(self.accelerator.device)
 
+        self.pipe.enable_attention_slicing()
+
         self.pipe.scheduler = UniPCMultistepScheduler.from_config(self.pipe.scheduler.config)
         
         self.auto_processor = AutoProcessor.from_pretrained(VIT_PATH)
@@ -80,6 +82,9 @@ class OOTDiffusionDC:
             MODEL_PATH,
             subfolder="text_encoder",
         )
+
+        self.pipe.unet_garm = torch.compile(self.pipe.unet_garm)
+        self.pipe.unet_vton = torch.compile(self.pipe.unet_vton)
 
     def tokenize_captions(self, captions, max_length):
         inputs = self.tokenizer(

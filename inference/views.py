@@ -3,7 +3,7 @@ warnings.filterwarnings("ignore", category=FutureWarning)
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 import time
-from django.http import HttpResponse, JsonResponse
+from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import os
 import requests
@@ -78,8 +78,6 @@ def generate(request):
         except requests.exceptions.RequestException as e:
             return str(e)
         return None
-
-    
 
     def resize_and_convert_image(image_path, max_width, max_height):
         print(f"  Processing image: {image_path}")
