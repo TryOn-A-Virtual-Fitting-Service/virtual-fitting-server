@@ -3,20 +3,15 @@ from PIL import Image
 import sys
 import os
 import gc
+import torch
 from run.utils_ootd import get_mask_location
 from preprocess.openpose.run_openpose import OpenPose
 from preprocess.humanparsing.run_parsing import Parsing
 from ootd.inference_ootd_hd import OOTDiffusionHD
 from ootd.inference_ootd_dc import OOTDiffusionDC
 
-import time
 
 def run_ootd(model_path, cloth_path, accelerator, gpu_id=0, model_type="hd", category=0, scale=2.0, step=40, sample=1, seed=-1):
-    import gc
-    import torch
-    gc.collect()
-    torch.cuda.empty_cache()
-    
     print(f"Loading model: openpose")
     openpose_model = OpenPose(gpu_id)
     print(f"Models loaded")
@@ -88,14 +83,10 @@ def run_ootd(model_path, cloth_path, accelerator, gpu_id=0, model_type="hd", cat
     del model_parse
     del category_dict
     del category_dict_utils
+    
     gc.collect()
     with torch.no_grad():
         torch.cuda.empty_cache()
-
-    if model_type == 'hd':
-        OOTDiffusionHD.reset_instance()
-    elif model_type == 'dc':
-        OOTDiffusionDC.reset_instance()
 
     image = None
     if type(images) == list:

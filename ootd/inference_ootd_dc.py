@@ -38,6 +38,7 @@ class OOTDiffusionDC:
         self.gpu_id = self.accelerator.device
         # self.accelerator = Accelerator(mixed_precision='fp16')
 
+        print("Current working directory:", os.getcwd())
         vae = AutoencoderKL.from_pretrained(
             VAE_PATH,
             subfolder="vae",

@@ -8,8 +8,7 @@ import torch
 import numpy as np
 from PIL import Image
 import cv2
-import gc
-import torch
+
 import random
 import time
 import pdb
@@ -26,7 +25,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 from transformers import AutoProcessor, CLIPVisionModelWithProjection
 from transformers import CLIPTextModel, CLIPTokenizer
-import threading
 
 VIT_PATH = "./checkpoints/clip-vit-large-patch14"
 VAE_PATH = "./checkpoints/ootd"
@@ -34,71 +32,51 @@ UNET_PATH = "./checkpoints/ootd/ootd_hd/checkpoint-36000"
 MODEL_PATH = "./checkpoints/ootd"
 
 class OOTDiffusionHD:
-    """
-    Singleton class to manage the OOTD Diffusion HD pipeline.
-    Ensures that only one instance exists and provides methods to generate images and manage resources.
-    """
-    _instance = None
-
-    def __new__(cls, gpu_id, accelerator):
-        if cls._instance is None:
-            cls._instance = super(OOTDiffusionHD, cls).__new__(cls)
-            cls._instance.__initialized = False
-        return cls._instance
 
     def __init__(self, gpu_id, accelerator):
-        if self.__initialized:
-            return
-        self.__initialized = True
-
         self.accelerator = accelerator
         self.gpu_id = self.accelerator.device
+        # self.accelerator = Accelerator(mixed_precision='fp16')
 
         print("Current working directory:", os.getcwd())
-
-        # Load models
-        self.vae = AutoencoderKL.from_pretrained(
+        vae = AutoencoderKL.from_pretrained(
             VAE_PATH,
             subfolder="vae",
             torch_dtype=torch.float16,
         )
 
-        self.unet_garm = UNetGarm2DConditionModel.from_pretrained(
+        unet_garm = UNetGarm2DConditionModel.from_pretrained(
             UNET_PATH,
             subfolder="unet_garm",
             torch_dtype=torch.float16,
             use_safetensors=True,
         )
-        self.unet_vton = UNetVton2DConditionModel.from_pretrained(
+        unet_vton = UNetVton2DConditionModel.from_pretrained(
             UNET_PATH,
             subfolder="unet_vton",
             torch_dtype=torch.float16,
             use_safetensors=True,
         )
+        
+        unet_vton.enable_xformers_memory_efficient_attention()
+        unet_garm.enable_xformers_memory_efficient_attention()
+        
+        vae, unet_garm, unet_vton = self.accelerator.prepare(vae, unet_garm, unet_vton)
 
-        # Prepare models with accelerator
-        self.vae, self.unet_garm, self.unet_vton = self.accelerator.prepare(
-            self.vae, self.unet_garm, self.unet_vton
-        )
-
-        # Initialize the pipeline
         self.pipe = OotdPipeline.from_pretrained(
             MODEL_PATH,
-            unet_garm=self.unet_garm,
-            unet_vton=self.unet_vton,
-            vae=self.vae,
+            unet_garm=unet_garm,
+            unet_vton=unet_vton,
+            vae=vae,
             torch_dtype=torch.float16,
+            # variant="fp16",
             use_safetensors=True,
             safety_checker=None,
             requires_safety_checker=False,
         ).to(self.accelerator.device)
 
-        # Update the scheduler
-        self.pipe.scheduler = UniPCMultistepScheduler.from_config(
-            self.pipe.scheduler.config
-        )
-
-        # Initialize processors and encoders
+        self.pipe.scheduler = UniPCMultistepScheduler.from_config(self.pipe.scheduler.config)
+        
         self.auto_processor = AutoProcessor.from_pretrained(VIT_PATH)
         self.image_encoder = CLIPVisionModelWithProjection.from_pretrained(VIT_PATH)
 
@@ -112,137 +90,52 @@ class OOTDiffusionHD:
         )
 
     def tokenize_captions(self, captions, max_length):
-        """
-        Tokenizes the input captions.
-
-        Args:
-            captions (list of str): Captions to tokenize.
-            max_length (int): Maximum length for tokenization.
-
-        Returns:
-            torch.Tensor: Tokenized input IDs.
-        """
         inputs = self.tokenizer(
-            captions,
-            max_length=max_length,
-            padding="max_length",
-            truncation=True,
-            return_tensors="pt",
+            captions, max_length=max_length, padding="max_length", truncation=True, return_tensors="pt"
         )
         return inputs.input_ids
 
-    def __call__(
-        self,
-        model_type='hd',
-        category='upperbody',
-        image_garm=None,
-        image_vton=None,
-        mask=None,
-        image_ori=None,
-        num_samples=1,
-        num_steps=20,
-        image_scale=1.0,
-        seed=-1,
+
+    def __call__(self,
+                model_type='hd',
+                category='upperbody',
+                image_garm=None,
+                image_vton=None,
+                mask=None,
+                image_ori=None,
+                num_samples=1,
+                num_steps=20,
+                image_scale=1.0,
+                seed=-1,
     ):
-        """
-        Generates images based on the provided inputs.
-
-        Args:
-            model_type (str): Type of model ('hd' or 'dc').
-            category (str): Category label for 'dc' model type.
-            image_garm (PIL.Image or np.ndarray): Garment image.
-            image_vton (PIL.Image or np.ndarray): Virtual try-on image.
-            mask (PIL.Image or np.ndarray): Mask image.
-            image_ori (PIL.Image or np.ndarray): Original image.
-            num_samples (int): Number of samples to generate.
-            num_steps (int): Number of inference steps.
-            image_scale (float): Guidance scale for image generation.
-            seed (int): Seed for randomness. If -1, a random seed is generated.
-
-        Returns:
-            list of PIL.Image: Generated images.
-        """
         if seed == -1:
             random.seed(time.time())
             seed = random.randint(0, 2147483647)
-        print('Initial seed:', seed)
+        print('Initial seed: ' + str(seed))
         generator = torch.manual_seed(seed)
 
         with torch.no_grad():
-            # Process the garment image
             prompt_image = self.auto_processor(images=image_garm, return_tensors="pt")
             prompt_image = self.image_encoder(prompt_image.data['pixel_values']).image_embeds
             prompt_image = prompt_image.unsqueeze(1)
-
             if model_type == 'hd':
-                # For 'hd' model type, use an empty prompt and replace part of the embeddings
-                prompt_embeds = self.text_encoder(
-                    self.tokenize_captions([""], 2)
-                )[0]
+                prompt_embeds = self.text_encoder(self.tokenize_captions([""], 2))[0]
                 prompt_embeds[:, 1:] = prompt_image[:]
             elif model_type == 'dc':
-                # For 'dc' model type, use the category and concatenate image embeddings
-                prompt_embeds = self.text_encoder(
-                    self.tokenize_captions([category], 3)
-                )[0]
+                prompt_embeds = self.text_encoder(self.tokenize_captions([category], 3))[0]
                 prompt_embeds = torch.cat([prompt_embeds, prompt_image], dim=1)
             else:
-                raise ValueError("model_type must be 'hd' or 'dc'!")
+                raise ValueError("model_type must be \'hd\' or \'dc\'!")
 
-            # Generate images using the pipeline
-            images = self.pipe(
-                prompt_embeds=prompt_embeds,
-                image_garm=image_garm,
-                image_vton=image_vton,
-                mask=mask,
-                image_ori=image_ori,
-                num_inference_steps=num_steps,
-                image_guidance_scale=image_scale,
-                num_images_per_prompt=num_samples,
-                generator=generator,
+            images = self.pipe(prompt_embeds=prompt_embeds,
+                        image_garm=image_garm,
+                        image_vton=image_vton, 
+                        mask=mask,
+                        image_ori=image_ori,
+                        num_inference_steps=num_steps,
+                        image_guidance_scale=image_scale,
+                        num_images_per_prompt=num_samples,
+                        generator=generator,
             ).images
 
-            # Clean up intermediate variables
-            del prompt_image
-            del prompt_embeds
-            del generator
-            gc.collect()
-
         return images
-
-    def free_memory(self):
-        """
-        Frees up memory by deleting large objects and clearing caches.
-        """
-        print("Freeing memory...")
-        try:
-            del self.pipe
-            del self.image_encoder
-            del self.text_encoder
-            del self.auto_processor
-            del self.unet_garm
-            del self.unet_vton
-            del self.vae
-        except AttributeError:
-            # If any attribute is already deleted, pass
-            pass
-        gc.collect()
-        with torch.no_grad():
-            torch.cuda.empty_cache()
-        print("Memory freed.")
-
-    @classmethod
-    def reset_instance(cls):
-        """
-        Resets the singleton instance, freeing memory.
-        """
-        if cls._instance is not None:
-            cls._instance.free_memory()
-            cls._instance = None
-            print("Singleton instance reset.")
-
-    def __del__(self):
-        """
-        Destructor to ensure memory is freed when the instance is deleted.
-        """
-        self.free_memory()
