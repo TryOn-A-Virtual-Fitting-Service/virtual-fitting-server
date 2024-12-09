@@ -36,6 +36,9 @@ def generate(request):
     # print("Request files: ")
     # print(request.FILES)
 
+    torch.cuda.empty_cache()
+    torch.cuda.ipc_collect()
+
     print(f"Given protocol is : {request.scheme}")
     try:
         data = json.loads(request.body)
