@@ -20,12 +20,10 @@ def run_ootd(model_path, cloth_path, accelerator, gpu_id=0, model_type="hd", cat
     print(f"Loading model: openpose")
     openpose_model = OpenPose(gpu_id)
     print(f"Models loaded")
-    time.sleep(10)
 
     print(f"Loading model: human parsing")
     parsing_model = Parsing(gpu_id)
     print(f"Models loaded")
-    time.sleep(10)
 
     category_dict = ['upperbody', 'lowerbody', 'dress']
     category_dict_utils = ['upper_body', 'lower_body', 'dresses']
@@ -41,32 +39,27 @@ def run_ootd(model_path, cloth_path, accelerator, gpu_id=0, model_type="hd", cat
     if model_type == 'hd' and category != 0:
         raise ValueError("model_type 'hd' requires category == 0 (upperbody)!")
     print(f"Models loaded")
-    time.sleep(10)
 
     print(f"Resizing images")
     cloth_img = Image.open(cloth_path).resize((768, 1024))
     model_img = Image.open(model_path).resize((768, 1024))
     print(f"Images resized")
-    time.sleep(10)
 
     print(f"Running openpose and human parsing")
     keypoints = openpose_model(model_img.resize((384, 512)))
     model_parse, _ = parsing_model(model_img.resize((384, 512)))
     print(f"Openpose and human parsing finished")
-    time.sleep(10)
 
     print(f"Getting mask location")
     mask, mask_gray = get_mask_location(model_type, category_dict_utils[category], model_parse, keypoints)
     mask = mask.resize((768, 1024), Image.NEAREST)
     mask_gray = mask_gray.resize((768, 1024), Image.NEAREST)
     print(f"Mask location obtained")
-    time.sleep(10)
 
     print(f"Creating masked image")
     masked_vton_img = Image.composite(mask_gray, model_img, mask)
     # masked_vton_img.save('./results/mask.jpg')
     print(f"Masked image created")
-    time.sleep(10)
 
     print(f"Running OOTD model")
     images = model(
@@ -82,7 +75,6 @@ def run_ootd(model_path, cloth_path, accelerator, gpu_id=0, model_type="hd", cat
         seed=seed,
     )
     print(f"OOTD model finished")
-    time.sleep(10)
 
     image = None
     if type(images) == list:

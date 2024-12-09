@@ -8,7 +8,8 @@ import torch
 import numpy as np
 from PIL import Image
 import cv2
-
+import gc
+import torch
 import random
 import time
 import pdb
@@ -139,8 +140,7 @@ class OOTDiffusionHD:
                         num_images_per_prompt=num_samples,
                         generator=generator,
             ).images
-        import gc
-        import torch
+        
         gc.collect()
         torch.cuda.empty_cache()
         return images
