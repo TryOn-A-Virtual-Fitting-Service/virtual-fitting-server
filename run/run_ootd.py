@@ -19,10 +19,12 @@ def run_ootd(model_path, cloth_path, accelerator, gpu_id=0, model_type="hd", cat
     
     print(f"Loading model: openpose")
     openpose_model = OpenPose(gpu_id)
+    print(f"Models loaded")
     time.sleep(10)
 
     print(f"Loading model: human parsing")
     parsing_model = Parsing(gpu_id)
+    print(f"Models loaded")
     time.sleep(10)
 
     category_dict = ['upperbody', 'lowerbody', 'dress']
