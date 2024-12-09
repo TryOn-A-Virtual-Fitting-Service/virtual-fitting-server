@@ -75,6 +75,7 @@ def generate(request):
             response.raise_for_status()
             with open(path, 'wb') as destination:
                 destination.write(response.content)
+            print(f"URL: {url}")
             print(f"  Image downloaded successfully: {path}")
         except requests.exceptions.RequestException as e:
             return str(e)
