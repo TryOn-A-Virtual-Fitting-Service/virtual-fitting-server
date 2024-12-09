@@ -92,6 +92,11 @@ def run_ootd(model_path, cloth_path, accelerator, gpu_id=0, model_type="hd", cat
     with torch.no_grad():
         torch.cuda.empty_cache()
 
+    if model_type == 'hd':
+        OOTDiffusionHD.reset_instance()
+    elif model_type == 'dc':
+        OOTDiffusionDC.reset_instance()
+
     image = None
     if type(images) == list:
         image = images[0]
