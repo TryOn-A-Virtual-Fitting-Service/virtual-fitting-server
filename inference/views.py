@@ -44,6 +44,7 @@ def generate(request):
         model_url = data.get('model')
         category = data.get('category')
         scale = float(data.get('scale', 2.0))
+        steps = int(data.get('steps', 40))
     except json.JSONDecodeError:
         return JsonResponse({
             'message': 'Invalid JSON input',
@@ -209,7 +210,7 @@ def generate(request):
             'data': "Category must be 0 (upper) or 1 (lower)",
         }, status=400)
 
-    image = run_ootd(model_path, clothing_path, accelerator, model_type=model_type, category=category, scale=scale, step=40)
+    image = run_ootd(model_path, clothing_path, accelerator, model_type=model_type, category=category, scale=scale, step=steps)
 
     with concurrent.futures.ThreadPoolExecutor() as executor:
         future_clear_cache = executor.submit(clear_cuda_cache)
