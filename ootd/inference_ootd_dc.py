@@ -1,19 +1,11 @@
-import pdb
 from pathlib import Path
 import sys
 PROJECT_ROOT = Path(__file__).absolute().parents[0].absolute()
 sys.path.insert(0, str(PROJECT_ROOT))
-import os
-import torch
-import numpy as np
-from PIL import Image
-import cv2
 
+import torch
 import random
 import time
-import pdb
-
-from accelerate import Accelerator
 
 from pipelines_ootd.pipeline_ootd import OotdPipeline
 from pipelines_ootd.unet_garm_2d_condition import UNetGarm2DConditionModel
@@ -21,8 +13,6 @@ from pipelines_ootd.unet_vton_2d_condition import UNetVton2DConditionModel
 from diffusers import UniPCMultistepScheduler
 from diffusers import AutoencoderKL
 
-import torch.nn as nn
-import torch.nn.functional as F
 from transformers import AutoProcessor, CLIPVisionModelWithProjection
 from transformers import CLIPTextModel, CLIPTokenizer
 
@@ -34,9 +24,9 @@ MODEL_PATH = "./checkpoints/ootd"
 class OOTDiffusionDC:
 
     def __init__(self, gpu_id, accelerator):
-        self.gpu_id = 'cuda:' + str(gpu_id)
-
         self.accelerator = accelerator
+        self.gpu_id = accelerator.device
+
         # self.accelerator = Accelerator(mixed_precision='fp16')
 
         vae = AutoencoderKL.from_pretrained(
@@ -57,6 +47,9 @@ class OOTDiffusionDC:
             torch_dtype=torch.float16,
             use_safetensors=True,
         )
+
+        unet_vton.enable_xformers_memory_efficient_attention()
+        unet_garm.enable_xformers_memory_efficient_attention()
 
         self.pipe = OotdPipeline.from_pretrained(
             MODEL_PATH,

@@ -7,14 +7,9 @@ from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import os
 import requests
-import shutil
 from datetime import datetime
-from rembg import remove
-from PIL import Image
 import torch
-from io import BytesIO
 import json
-import onnxruntime as ort
 # from OOTDiffusion.run.run_ootd import run_ootd
 
 from accelerate import Accelerator
@@ -37,6 +32,10 @@ def generate(request):
     # print(request.FILES)
 
     print(f"Given protocol is : {request.scheme}")
+
+    # Measure the time taken for the entire process
+    start_time = time.time()
+
     try:
         data = json.loads(request.body)
         clothing_url = data.get('clothing')
@@ -69,8 +68,9 @@ def generate(request):
 
     headers = {'User-Agent': 'Mozilla/5.0'}
 
-    def download_image(url, path, headers={'User-Agent': 'Mozilla/5.0'}):
+    def download_image(url, categ, path, headers={'User-Agent': 'Mozilla/5.0'}):
         try:
+            print(f"Downloading <{categ}> image: {url}")
             response = requests.get(url, headers=headers)
             response.raise_for_status()
             with open(path, 'wb') as destination:
@@ -126,16 +126,16 @@ def generate(request):
     
     print("Downloading images...")
     with concurrent.futures.ThreadPoolExecutor() as executor:
-        future_clothing = executor.submit(download_image, clothing_url, clothing_path, headers)
-        future_model = executor.submit(download_image, model_url, model_path, headers)
+        future_clothing = executor.submit(download_image, clothing_url, "clothing", clothing_path, headers)
+        future_model = executor.submit(download_image, model_url, "model", model_path, headers)
 
         clothing_error = future_clothing.result()
         model_error = future_model.result()
     
     # 다운로드 단계 종료 시간 및 실행 시간 계산
     end_time_download = time.time()
-    duration_download = (end_time_download - start_time_download) * 1000  # 밀리초 단위
-    print(f"### Download step : {duration_download:.2f} ms ###")
+    duration_download = (end_time_download - start_time_download)
+    print(f"### Download step : {duration_download:.4f} seconds ###")
     
     if clothing_error:
         return JsonResponse({
@@ -189,11 +189,6 @@ def generate(request):
     duration_save = (end_time_save - start_time_save) * 1000  # 밀리초 단위
     print(f"### Image Saving : {duration_save:.2f} ms ###")
 
-    # ############################################ TEST ############################################    
-    # return JsonResponse({
-    #     'message': 'Test successful',
-    # }, status=200)
-    # ##############################################################################################
 
     from run.run_ootd import run_ootd
     if int(category) == 0: # Upper
@@ -210,8 +205,14 @@ def generate(request):
 
     image = run_ootd(model_path, clothing_path, accelerator, model_type=model_type, category=category, scale=2.0, step=40)
     
-    torch.cuda.empty_cache()
-    torch.cuda.ipc_collect()
+    # Clear CUDA cache and collect IPC handles in a separate thread
+    def clear_cuda_cache():
+        torch.cuda.empty_cache()
+        torch.cuda.ipc_collect()
+
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        future_clear_cache = executor.submit(clear_cuda_cache)
+        future_clear_cache.result()
 
     # 모델 사이즈에 맞게 이미지 크기 조정
     with Image.open(model_path) as model_img:
@@ -228,6 +229,11 @@ def generate(request):
             'data': str(e),
         }, status=500)
     
+    # Measure the time taken for the entire process
+    end_time = time.time()
+    duration = end_time - start_time
+    print(f"### Total time : {duration:.2f} seconds ###")
+
     return JsonResponse({
         'message': 'Inference successful',
         'data': result_filename,
